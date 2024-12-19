@@ -4,10 +4,10 @@
 #include <map>
 
 // Pin Configuration
-const int BUTTON_PIN = 0;     // Changed to G22 for external button OR 0 for built-in BOOT button
+const int BUTTON_PIN = 0;      // G22 for external button OR 0 for built-in BOOT button
 const int BUZZER_PIN = 19;     // G19 for external buzzer 
-const int BLUE_LED = 2;        // Built-in blue LED (GPIO 2)
-const int RED_LED = 13;        // Red LED (change if not connected or absent)
+const int BLUE_LED = 2;        // External blue LED (GPIO 2)
+const int RED_LED = 13;        // External red LED 
 
 // User-adjustable controls
 const bool AUTO_PAUSE_AFTER_SECTION = true;    // Pause after each section
@@ -22,29 +22,36 @@ const int NEXT_CLIP_TAB_COUNT = 5;
 const int CLIP_DELAY = 1000;
 
 // Typing Behavior Constants
-const int BASE_WPM = 56;
-const float TYPO_CHANCE = 0.15f;
-const float DOUBLE_SPACE_CHANCE = 0.02f;
-const float UNCORRECTED_TYPO_CHANCE = 0.066f;
-const int UNCORRECTED_TYPO_THRESHOLD = 6;
-const int MIN_BURST_WORDS = 6;
-const int MAX_BURST_WORDS = 14;
-const int PAUSE_AFTER_BURST = 500;
+const int BASE_WPM = 65;                       // Base words per minute - increase this for faster typing
+const float TYPO_CHANCE = 0.15f;               // 15% chance of making a typo per word
+const float DOUBLE_SPACE_CHANCE = 0.02f;       // 2% chance of accidentally typing double space
+const float UNCORRECTED_TYPO_CHANCE = 0.066f;  // 6.6% chance of leaving a typo uncorrected
+const int UNCORRECTED_TYPO_THRESHOLD = 6;      // Only leave typos uncorrected in words longer than this
+const int MIN_BURST_WORDS = 6;                 // Minimum words typed before possible pause
+const int MAX_BURST_WORDS = 14;                // Maximum words typed before forcing a pause
+const int PAUSE_AFTER_BURST = 800;             // Milliseconds to pause after a burst of typing
 
 // Enhanced Randomness Settings
-const int THINKING_PAUSE_CHANCE = 5;
-const int MIN_THINKING_PAUSE = 500;
-const int MAX_THINKING_PAUSE = 1500;
-const float FATIGUE_FACTOR = 0.05f;
-const float MAX_FATIGUE_LEVEL = 0.3f;
-const float RECOVERY_RATE = 0.05f;
+const int THINKING_PAUSE_CHANCE = 15;          // 15% chance of taking a thinking pause between words
+const int MIN_THINKING_PAUSE = 800;            // Minimum milliseconds for thinking pause
+const int MAX_THINKING_PAUSE = 2000;           // Maximum milliseconds for thinking pause
+const float FATIGUE_FACTOR = 0.05f;            // How quickly typing speed degrades
+const float MAX_FATIGUE_LEVEL = 0.3f;          // Maximum slowdown due to fatigue
+const float RECOVERY_RATE = 0.05f;             // How quickly fatigue recovers
 
 // Timing Constants
-const int BASE_CHAR_DELAY = (60 * 1000) / (BASE_WPM * 5);
-const int WORD_PAUSE = BASE_CHAR_DELAY * 1.5;
-const int SENTENCE_PAUSE = BASE_CHAR_DELAY * 3;
-const int CORRECTION_DELAY = BASE_CHAR_DELAY / 2;
+const int BASE_CHAR_DELAY = (60 * 1000) / (BASE_WPM * 5);  // Milliseconds between characters
+const int WORD_PAUSE = BASE_CHAR_DELAY * 2.5;              // Pause between words
+const int SENTENCE_PAUSE = BASE_CHAR_DELAY * 3;            // Pause between sentences
+const int CORRECTION_DELAY = BASE_CHAR_DELAY / 2;          // Speed of typo correction
 const int DEBOUNCE_DELAY = 200;
+
+//Navigate to Clip Constants
+const int MIN_TAB_DELAY = 140;     // Minimum milliseconds between tab presses
+const int MAX_TAB_DELAY = 400;    // Maximum milliseconds between tab presses
+const int TAB_PAUSE_CHANCE = 20;  // 20% chance of taking a longer pause while tabbing
+const int TAB_PAUSE_MIN = 300;    // Minimum milliseconds for occasional longer pause
+const int TAB_PAUSE_MAX = 600;    // Maximum milliseconds for occasional longer pause
 
 // Global Variables
 BleKeyboard bleKeyboard("PRO X TSL", "Logitech", 100);
@@ -164,20 +171,29 @@ void handleButton() {
     lastReading = reading;
 }
 
+// Modified navigateToClip function
 void navigateToClip(int clipNumber) {
-    if (clipNumber == 1) {
-        // First clip needs more tabs to reach
-        for (int i = 0; i < FIRST_CLIP_TAB_COUNT; i++) {
-            bleKeyboard.write(KEY_TAB);
-            delay(50);  // Small delay between tabs
+    int tabsNeeded = (clipNumber == 1) ? FIRST_CLIP_TAB_COUNT : NEXT_CLIP_TAB_COUNT;
+    
+    for (int i = 0; i < tabsNeeded; i++) {
+        bleKeyboard.write(KEY_TAB);
+        
+        // Random base delay between tabs
+        delay(random(MIN_TAB_DELAY, MAX_TAB_DELAY));
+        
+        // Occasional longer pause (like a human thinking or checking position)
+        if (random(100) < TAB_PAUSE_CHANCE) {
+            delay(random(TAB_PAUSE_MIN, TAB_PAUSE_MAX));
         }
-    } else {
-        // Subsequent clips need fewer tabs
-        for (int i = 0; i < NEXT_CLIP_TAB_COUNT; i++) {
-            bleKeyboard.write(KEY_TAB);
-            delay(50);
+        
+        // Extra pause after every 4-6 tabs (like a human naturally grouping actions)
+        if (i > 0 && i % random(4, 7) == 0) {
+            delay(random(200, 400));
         }
     }
+    
+    // Final pause after reaching destination
+    delay(random(300, 500));
 }
 
 void countTotalClips() {
