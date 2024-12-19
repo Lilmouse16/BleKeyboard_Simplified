@@ -4,9 +4,17 @@
 #include <map>
 
 // Pin Configuration
-const int BOOT_BUTTON = 0;     // Built-in BOOT button
-const int BLUE_LED = 2;        // Built-in blue LED
-const int RED_LED = 13;        // Built-in red LED
+const int BUTTON_PIN = 0;     // Changed to G22 for external button OR 0 for built-in BOOT button
+const int BUZZER_PIN = 19;     // G19 for external buzzer 
+const int BLUE_LED = 2;        // Built-in blue LED (GPIO 2)
+const int RED_LED = 13;        // Red LED (change if not connected or absent)
+
+// User-adjustable controls
+const bool AUTO_PAUSE_AFTER_SECTION = true;    // Pause after each section
+const bool BUZZER_ENABLED = true;              // Enable/disable buzzer
+const int DATA_FLICKER_SPEED = 100;            // Alternating speed during typing
+const int COMPLETE_FLICKER_SPEED = 500;        // Synchronized speed after section
+const int SECTION_COMPLETE_BEEP = 200;         // Buzzer beep duration
 
 // Navigation Constants
 const int FIRST_CLIP_TAB_COUNT = 16;
@@ -38,23 +46,6 @@ const int SENTENCE_PAUSE = BASE_CHAR_DELAY * 3;
 const int CORRECTION_DELAY = BASE_CHAR_DELAY / 2;
 const int DEBOUNCE_DELAY = 200;
 
-// QWERTY Keyboard Layout
-const std::map<char, std::vector<char>> ADJACENT_KEYS = {
-    {'q', {'w', 'a', '1'}}, {'w', {'q', 'e', 's', 'a', '2'}},
-    {'e', {'w', 'r', 'd', 's', '3'}}, {'r', {'e', 't', 'f', 'd', '4'}},
-    {'t', {'r', 'y', 'g', 'f', '5'}}, {'y', {'t', 'u', 'h', 'g', '6'}},
-    {'u', {'y', 'i', 'j', 'h', '7'}}, {'i', {'u', 'o', 'k', 'j', '8'}},
-    {'o', {'i', 'p', 'l', 'k', '9'}}, {'p', {'o', '[', ';', 'l', '0'}},
-    {'a', {'q', 'w', 's', 'z'}}, {'s', {'w', 'e', 'd', 'x', 'a'}},
-    {'d', {'e', 'r', 'f', 'c', 's'}}, {'f', {'r', 't', 'g', 'v', 'd'}},
-    {'g', {'t', 'y', 'h', 'b', 'f'}}, {'h', {'y', 'u', 'j', 'n', 'g'}},
-    {'j', {'u', 'i', 'k', 'm', 'h'}}, {'k', {'i', 'o', 'l', ',', 'j'}},
-    {'l', {'o', 'p', ';', '.', 'k'}}, {'z', {'a', 's', 'x'}},
-    {'x', {'s', 'd', 'c', 'z'}}, {'c', {'d', 'f', 'v', 'x'}},
-    {'v', {'f', 'g', 'b', 'c'}}, {'b', {'g', 'h', 'n', 'v'}},
-    {'n', {'h', 'j', 'm', 'b'}}, {'m', {'j', 'k', ',', 'n'}}
-};
-
 // Global Variables
 BleKeyboard bleKeyboard("PRO X TSL", "Logitech", 100);
 bool isPaused = true;
@@ -62,186 +53,262 @@ bool lastButtonState = HIGH;
 int currentClip = 1;
 int totalClips = 0;
 bool connectionAnnounced = false;
-int lastTabCount = 0;
-float currentFatigue = 0.0f;
-unsigned long lastRestTime = 0;
-bool isComplete = false;
-String currentWord = "";
-size_t currentPos = 0;
-bool processingPaused = false;
+bool sectionComplete = false;
+unsigned long lastLedToggle = 0;
+bool ledState = false;
 
-// Helper Functions
-float getRandomSpeedMultiplier() {
-    float base = 0.8f + (random(0, 400) / 1000.0f);
-    float timeEffect = sin(millis() / 3600000.0f * PI) * 0.1f;
-    float multiplier = base * (1.0f - currentFatigue) * (1.0f + timeEffect);
-    return multiplier < 0.6f ? 0.6f : (multiplier > 1.4f ? 1.4f : multiplier);
+// Function Declarations
+void setLedPattern(int pattern);
+void playCompletionBeep();
+void handleButton();
+void navigateToClip(int clipNumber);
+void countTotalClips();
+void simulateTypingDelay();
+void simulateThinkingPause();
+void handleTypo(const String& word);
+void humanTypeString(const String& text);
+void processCurrentClip();
+
+// LED Control Functions
+void setLedPattern(int pattern) {
+    static unsigned long lastToggle = 0;
+    unsigned long currentMillis = millis();
+    
+    switch(pattern) {
+        case 0: // Both OFF
+            digitalWrite(BLUE_LED, HIGH);  // Active LOW
+            digitalWrite(RED_LED, HIGH);   // Active LOW
+            break;
+            
+        case 1: // Both ON (ready state)
+            digitalWrite(BLUE_LED, LOW);   // Active LOW
+            digitalWrite(RED_LED, LOW);    // Active LOW
+            break;
+            
+        case 2: // Alternating pattern (typing)
+            if (currentMillis - lastToggle >= DATA_FLICKER_SPEED) {
+                ledState = !ledState;
+                digitalWrite(BLUE_LED, ledState ? HIGH : LOW);   // Active LOW
+                digitalWrite(RED_LED, ledState ? LOW : HIGH);    // Active LOW
+                lastToggle = currentMillis;
+            }
+            break;
+            
+        case 3: // Only RED ON (paused)
+            digitalWrite(BLUE_LED, HIGH);  // OFF (Active LOW)
+            digitalWrite(RED_LED, LOW);    // ON (Active LOW)
+            break;
+            
+        case 4: // Synchronized flashing (section complete)
+            if (currentMillis - lastToggle >= COMPLETE_FLICKER_SPEED) {
+                ledState = !ledState;
+                digitalWrite(BLUE_LED, ledState ? LOW : HIGH);   // Active LOW
+                digitalWrite(RED_LED, ledState ? LOW : HIGH);    // Active LOW
+                lastToggle = currentMillis;
+            }
+            break;
+            
+        case 5: // Only BLUE ON (connecting)
+            digitalWrite(BLUE_LED, LOW);   // ON (Active LOW)
+            digitalWrite(RED_LED, HIGH);   // OFF (Active LOW)
+            break;
+    }
 }
 
-char getTypoChar(char originalChar) {
-    char lowerChar = tolower(originalChar);
-    if (ADJACENT_KEYS.find(lowerChar) != ADJACENT_KEYS.end()) {
-        const std::vector<char>& adjacent = ADJACENT_KEYS.at(lowerChar);
-        char typoChar = adjacent[random(0, adjacent.size())];
-        return isUpperCase(originalChar) ? toupper(typoChar) : typoChar;
-    }
-    return originalChar;
-}
-
-void makeTypo(const String& word) {
-    if (isPaused) return;
+void playCompletionBeep() {
+    if (!BUZZER_ENABLED) return;
     
-    int typoPos = random(0, word.length());
-    String typoWord = word;
-    typoWord.setCharAt(typoPos, getTypoChar(word[typoPos]));
-    
-    // Type wrong word
-    for (char c : typoWord) {
-        if (isPaused) return;
-        bleKeyboard.write(c);
-        delay(BASE_CHAR_DELAY * getRandomSpeedMultiplier());
-    }
-    
-    // Notice error pause
-    if (!isPaused) delay(random(300, 800));
-    
-    // Backspace to error
-    for (int i = typoWord.length() - 1; i >= typoPos; i--) {
-        if (isPaused) return;
-        bleKeyboard.write(KEY_BACKSPACE);
-        delay(CORRECTION_DELAY * getRandomSpeedMultiplier());
-    }
-    
-    // Type correction
-    for (int i = typoPos; i < word.length(); i++) {
-        if (isPaused) return;
-        bleKeyboard.write(word[i]);
-        delay(BASE_CHAR_DELAY * getRandomSpeedMultiplier());
-    }
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(SECTION_COMPLETE_BEEP);
+    digitalWrite(BUZZER_PIN, LOW);
 }
 
 void handleButton() {
-    int reading = digitalRead(BOOT_BUTTON);
     static unsigned long lastDebounceTime = 0;
+    static int lastStableState = HIGH;
+    static int lastReading = HIGH;
     
-    if (reading != lastButtonState) {
+    int reading = digitalRead(BUTTON_PIN);
+
+    // If the reading has changed, reset debounce timer
+    if (reading != lastReading) {
         lastDebounceTime = millis();
     }
     
+    // Check if enough time has passed since the last change
     if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
-        if (reading == LOW) {
-            isPaused = !isPaused;
-            processingPaused = isPaused;
-            if (isPaused) {
-                Serial.println("\n=== PAUSED ===");
-                Serial.println("Press BOOT to resume");
-                digitalWrite(RED_LED, LOW);
-            } else {
-                Serial.println("\n=== RESUMING ===");
-                if (!isComplete) digitalWrite(RED_LED, HIGH);
+        // If the reading is stable and different from last stable state
+        if (reading != lastStableState) {
+            lastStableState = reading;
+            
+            // Button press detected (transition to LOW)
+            if (reading == LOW) {
+                if (sectionComplete) {
+                    sectionComplete = false;
+                    isPaused = false;
+                    currentClip++;
+                    Serial.println("\n=== Starting Next Section ===");
+                } else {
+                    isPaused = !isPaused;
+                    if (isPaused) {
+                        Serial.println("\n=== PAUSED ===");
+                        Serial.println("Press button to resume");
+                    } else {
+                        Serial.println("\n=== RESUMING ===");
+                    }
+                }
             }
-            delay(DEBOUNCE_DELAY);
         }
     }
     
-    lastButtonState = reading;
-}
-
-void humanTypeString(const String& text) {
-    static char lastChar = 0;
-    int wordCount = 0;
-    int burstSize = random(MIN_BURST_WORDS, MAX_BURST_WORDS + 1);
-    
-    for (size_t i = 0; i < text.length() && !isPaused; i++) {
-        handleButton();  // Check for pause button frequently
-        if (isPaused) {
-            processingPaused = true;
-            return;
-        }
-
-        char currentChar = text[i];
-        
-        // Update fatigue
-        float newFatigue = currentFatigue + FATIGUE_FACTOR / 1000.0f;
-        currentFatigue = min(newFatigue, MAX_FATIGUE_LEVEL);
-
-        // Random thinking pauses
-        if (!isPaused && random(0, 100) < THINKING_PAUSE_CHANCE) {
-            delay(random(MIN_THINKING_PAUSE, MAX_THINKING_PAUSE));
-            currentFatigue = max(0.0f, currentFatigue - RECOVERY_RATE);
-        }
-
-        if (isAlphaNumeric(currentChar)) {
-            currentWord += currentChar;
-        } else if (currentWord.length() > 0) {
-            // Handle word completion
-            if (!isPaused && currentWord.length() > UNCORRECTED_TYPO_THRESHOLD && 
-                random(0, 100) < UNCORRECTED_TYPO_CHANCE * 100) {
-                int typoPos = random(0, currentWord.length());
-                currentWord[typoPos] = getTypoChar(currentWord[typoPos]);
-                for (char c : currentWord) {
-                    if (isPaused) return;
-                    bleKeyboard.write(c);
-                    delay(BASE_CHAR_DELAY * getRandomSpeedMultiplier());
-                }
-            } else if (!isPaused && random(0, 100) < TYPO_CHANCE * 100) {
-                makeTypo(currentWord);
-            } else {
-                for (char c : currentWord) {
-                    if (isPaused) return;
-                    bleKeyboard.write(c);
-                    delay(BASE_CHAR_DELAY * getRandomSpeedMultiplier());
-                }
-            }
-            currentWord = "";
-            wordCount++;
-
-            // Handle burst pauses
-            if (!isPaused && wordCount >= burstSize) {
-                delay(PAUSE_AFTER_BURST * getRandomSpeedMultiplier());
-                wordCount = 0;
-                burstSize = random(MIN_BURST_WORDS, MAX_BURST_WORDS);
-                currentFatigue = max(0.0f, currentFatigue - 0.1f);
-            }
-        }
-
-        // Type non-word characters
-        if (!isPaused && !isAlphaNumeric(currentChar)) {
-            bleKeyboard.write(currentChar);
-            delay(BASE_CHAR_DELAY * getRandomSpeedMultiplier());
-            lastChar = currentChar;
-        }
-
-        // Periodic rest
-        if (!isPaused && millis() - lastRestTime > 60000 && random(0, 100) < 10) {
-            delay(random(2000, 5000));
-            currentFatigue = max(0.0f, currentFatigue - 0.15f);
-            lastRestTime = millis();
-        }
-        
-        // Check button state periodically
-        if (i % 10 == 0) handleButton();
-    }
+    lastReading = reading;
 }
 
 void navigateToClip(int clipNumber) {
-    int tabsNeeded;
-    
     if (clipNumber == 1) {
-        tabsNeeded = FIRST_CLIP_TAB_COUNT;
-        lastTabCount = tabsNeeded;
+        // First clip needs more tabs to reach
+        for (int i = 0; i < FIRST_CLIP_TAB_COUNT; i++) {
+            bleKeyboard.write(KEY_TAB);
+            delay(50);  // Small delay between tabs
+        }
     } else {
-        tabsNeeded = NEXT_CLIP_TAB_COUNT;
+        // Subsequent clips need fewer tabs
+        for (int i = 0; i < NEXT_CLIP_TAB_COUNT; i++) {
+            bleKeyboard.write(KEY_TAB);
+            delay(50);
+        }
+    }
+}
+
+void countTotalClips() {
+    File file = SPIFFS.open("/text.txt", "r");
+    if (!file) {
+        Serial.println("ERROR: Failed to open text.txt for counting clips");
+        return;
+    }
+
+    totalClips = 0;
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        if (line.indexOf("Clip #") != -1) {
+            totalClips++;
+        }
     }
     
-    Serial.printf("Navigating to clip %d (sending %d tabs)\n", clipNumber, tabsNeeded);
+    file.close();
+    Serial.printf("Found %d total clips\n", totalClips);
+}
+
+void simulateTypingDelay() {
+    static float fatigueLevel = 0.0f;
     
-    for (int i = 0; i < tabsNeeded && !isPaused; i++) {
-        handleButton();  // Check for pause button
-        if (isPaused) return;
+    // Apply fatigue effect
+    fatigueLevel = min(fatigueLevel + FATIGUE_FACTOR, MAX_FATIGUE_LEVEL);
+    int adjustedDelay = BASE_CHAR_DELAY * (1.0f + fatigueLevel);
+    
+    // Random variation in typing speed
+    adjustedDelay += random(-BASE_CHAR_DELAY/4, BASE_CHAR_DELAY/4);
+    delay(max(adjustedDelay, BASE_CHAR_DELAY/2));
+    
+    // Occasional recovery from fatigue
+    if (random(100) < 10) {
+        fatigueLevel = max(0.0f, fatigueLevel - RECOVERY_RATE);
+    }
+}
+
+void simulateThinkingPause() {
+    if (random(100) < THINKING_PAUSE_CHANCE) {
+        delay(random(MIN_THINKING_PAUSE, MAX_THINKING_PAUSE));
+    }
+}
+
+void handleTypo(const String& word) {
+    if (random(100) < TYPO_CHANCE * 100) {
+        int wordLen = word.length();
+        int typoPos = random(wordLen);
         
-        bleKeyboard.write(KEY_TAB);
-        delay(BASE_CHAR_DELAY * getRandomSpeedMultiplier());
+        // Type the word up to the typo
+        for (int i = 0; i < typoPos; i++) {
+            bleKeyboard.write(word[i]);
+            simulateTypingDelay();
+        }
+        
+        // Make a typo
+        char wrongChar = 'a' + random(26);
+        bleKeyboard.write(wrongChar);
+        simulateTypingDelay();
+        
+        // Decide whether to correct the typo
+        if (wordLen < UNCORRECTED_TYPO_THRESHOLD || random(100) >= UNCORRECTED_TYPO_CHANCE * 100) {
+            // Correct the typo
+            delay(CORRECTION_DELAY);
+            bleKeyboard.write(KEY_BACKSPACE);
+            delay(CORRECTION_DELAY);
+            bleKeyboard.write(word[typoPos]);
+            simulateTypingDelay();
+            
+            // Complete the word
+            for (int i = typoPos + 1; i < wordLen; i++) {
+                bleKeyboard.write(word[i]);
+                simulateTypingDelay();
+            }
+        }
+    } else {
+        // Type the word normally
+        for (char c : word) {
+            bleKeyboard.write(c);
+            simulateTypingDelay();
+        }
+    }
+}
+
+void humanTypeString(const String& text) {
+    int wordsInBurst = 0;
+    int currentBurstLimit = random(MIN_BURST_WORDS, MAX_BURST_WORDS);
+    String currentWord = "";
+    
+    for (int i = 0; i < text.length(); i++) {
+        if (isPaused) return;  // Check for pause state
+        
+        char c = text[i];
+        
+        // Handle word completion
+        if (c == ' ' || c == '\n') {
+            handleTypo(currentWord);
+            currentWord = "";
+            wordsInBurst++;
+            
+            // Add double space occasionally
+            if (c == ' ' && random(100) < DOUBLE_SPACE_CHANCE * 100) {
+                bleKeyboard.write(' ');
+                simulateTypingDelay();
+            }
+            
+            bleKeyboard.write(c);
+            
+            // Handle burst limits and pauses
+            if (wordsInBurst >= currentBurstLimit) {
+                delay(PAUSE_AFTER_BURST);
+                wordsInBurst = 0;
+                currentBurstLimit = random(MIN_BURST_WORDS, MAX_BURST_WORDS);
+                simulateThinkingPause();
+            }
+            
+            // Longer pause after sentences
+            if (i > 0 && (text[i-1] == '.' || text[i-1] == '?' || text[i-1] == '!')) {
+                delay(SENTENCE_PAUSE);
+                simulateThinkingPause();
+            } else {
+                delay(WORD_PAUSE);
+            }
+        } else {
+            currentWord += c;
+        }
+    }
+    
+    // Handle last word if any
+    if (currentWord.length() > 0) {
+        handleTypo(currentWord);
     }
 }
 
@@ -259,7 +326,7 @@ void processCurrentClip() {
         return;
     }
     
-    delay(CLIP_DELAY * getRandomSpeedMultiplier());
+    delay(CLIP_DELAY);
     
     String clipText = "";
     int clipCount = 0;
@@ -271,7 +338,6 @@ void processCurrentClip() {
         
         if (line.indexOf("Clip #") != -1) {
             if (isReadingClip) break;
-            
             clipCount++;
             if (clipCount == currentClip) {
                 isReadingClip = true;
@@ -287,37 +353,34 @@ void processCurrentClip() {
     if (clipText.length() > 0 && !isPaused) {
         Serial.printf("Typing clip content (%d characters)\n", clipText.length());
         humanTypeString(clipText);
+        
+        // Section completion actions
+        if (!isPaused) {
+            playCompletionBeep();
+            sectionComplete = true;
+            if (AUTO_PAUSE_AFTER_SECTION) {
+                isPaused = true;
+                Serial.println("\n=== Section Complete ===");
+                Serial.println("Press button to continue");
+            }
+        }
     }
-}
-
-void countTotalClips() {
-    File file = SPIFFS.open("/text.txt", "r");
-    if (!file) {
-        Serial.println("ERROR: Failed to open text.txt");
-        return;
-    }
-    
-    totalClips = 0;
-    while (file.available()) {
-        String line = file.readStringUntil('\n');
-        if (line.indexOf("Clip #") != -1) totalClips++;
-    }
-    
-    file.close();
-    Serial.printf("Total clips found: %d\n", totalClips);
 }
 
 void setup() {
     Serial.begin(115200);
     Serial.println("\n=== ESP32 Human-like Typer Starting ===");
     
-    pinMode(BOOT_BUTTON, INPUT_PULLUP);
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    pinMode(BUZZER_PIN, OUTPUT);
     pinMode(BLUE_LED, OUTPUT);
     pinMode(RED_LED, OUTPUT);
     
-    // Initialize LEDs
-    digitalWrite(BLUE_LED, LOW);
-    digitalWrite(RED_LED, LOW);
+    // Initialize outputs
+    digitalWrite(BUZZER_PIN, LOW);
+    digitalWrite(BLUE_LED, HIGH);  // Turn OFF (ESP32 LEDs are active LOW)
+    digitalWrite(RED_LED, HIGH);   // Turn OFF (ESP32 LEDs are active LOW)
+    setLedPattern(0);  // Both OFF initially
     
     if (!SPIFFS.begin(true)) {
         Serial.println("ERROR: SPIFFS Mount Failed");
@@ -326,43 +389,39 @@ void setup() {
     
     bleKeyboard.begin();
     countTotalClips();
-    isComplete = false;
-    
-    Serial.println("Ready! Press BOOT button to start/pause/resume");
-    Serial.println("Press RST button to reset completely");
+    Serial.println("Ready! Press button to start/pause/resume");
 }
 
 void loop() {
-    digitalWrite(BLUE_LED, bleKeyboard.isConnected());
-    
     if (bleKeyboard.isConnected()) {
         if (!connectionAnnounced) {
             Serial.println("\n=== Bluetooth Connected ===");
             connectionAnnounced = true;
+            setLedPattern(1);  // Both ON when ready
         }
         
         handleButton();
         
-        if (!isPaused && currentClip <= totalClips) {
-            digitalWrite(RED_LED, HIGH);
+        if (!isPaused && !sectionComplete) {
+            setLedPattern(2);  // Alternating pattern while typing
             processCurrentClip();
-            if (!isPaused) {  // Only increment if not paused
-                currentClip++;
-                delay(CLIP_DELAY);
-                
-                // Add completion check and messaging
-                         if (currentClip > totalClips) {
-                    isComplete = true;
-                    Serial.println("\n=== All Clips Completed ===");
-                    Serial.println("Press RST to start over");
-                    digitalWrite(RED_LED, HIGH);  // Keep red LED on at completion
-                }
+        } else if (isPaused && !sectionComplete) {
+            setLedPattern(3);  // RED ON when paused
+        } else if (sectionComplete) {
+            setLedPattern(4);  // Synchronized flashing when section complete
+        }
+        
+        if (currentClip > totalClips) {
+            Serial.println("\n=== All Clips Completed ===");
+            setLedPattern(1);  // Both ON when complete
+            while(1) {
+                delay(1000);  // Stop processing
             }
         }
     } else {
         connectionAnnounced = false;
-        isComplete = false;  // Reset completion state on disconnect
-        digitalWrite(RED_LED, LOW);  // Turn off red LED when disconnected
+        sectionComplete = false;
+        setLedPattern(5);  // Only BLUE ON when connecting
         Serial.println("Waiting for Bluetooth connection...");
         delay(1000);
     }
