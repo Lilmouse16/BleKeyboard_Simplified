@@ -16,8 +16,8 @@ void Hardware::handleButton() {
     static unsigned long lastDebugTime = 0;
     int reading = digitalRead(Constants::Hardware::BUTTON_PIN);
 
-    // Print button state every 500ms to avoid flooding serial
-    if (millis() - lastDebugTime > 500) {
+    // Print button state every 3000ms to avoid flooding serial
+    if (millis() - lastDebugTime > 3000) {
         Serial.printf("Button Reading: %d, LastState: %d, Paused: %d, DebounceTime: %lu\n", 
                      reading, lastButtonState, paused, millis() - lastDebounceTime);
         lastDebugTime = millis();

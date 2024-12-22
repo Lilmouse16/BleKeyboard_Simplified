@@ -1,9 +1,23 @@
 #include "human_simulator.h"
 
-void HumanSimulator::init() {
+bool HumanSimulator::init() {
     fatigueLevel = 0.0f;
+    if (!ahtCalculator.init()) {
+        Serial.println("Failed to initialize AHT calculator");
+        return false;
+    }
+    
+    timingManager = new TimingManager(ahtCalculator);
+    timingManager->init();
+    
     countClips();
     Serial.println("Human simulator initialized");
+    return true;
+}
+
+void HumanSimulator::setDifficulty(float difficulty) {
+    ahtCalculator.setDifficultyMultiplier(difficulty);
+    timingManager->init(); // Reinitialize with new difficulty
 }
 
 void HumanSimulator::typeText(const String& text) {
@@ -11,25 +25,32 @@ void HumanSimulator::typeText(const String& text) {
     currentWord = "";
     wordsInBurst = 0;
     
+    totalCharCount = text.length();
+    typedCharCount = 0;
+    
     for (char c : text) {
-        // Check if hardware is paused before each character
         if (hardware.isPaused()) {
             Serial.println("Typing paused");
-            return;  // Exit typing if paused
+            return;
         }
 
         if (c == ' ' || c == '\n') {
-            Serial.printf("Typing word: %s\n", currentWord.c_str());
-            handleTypos(currentWord);
-            currentWord = "";
-            wordsInBurst++;
-            
-            if (random(100) < Constants::HumanBehavior::DOUBLE_SPACE_CHANCE * 100) {
-                Serial.println("Adding double space");
-                keyboard.type(" ");
+            if (!currentWord.isEmpty()) {
+                Serial.printf("Typing word: %s\n", currentWord.c_str());
+                handleTypos(currentWord);
+                currentWord = "";
+                wordsInBurst++;
+                
+                updateTypingProgress(++typedCharCount, totalCharCount);
+                
+                if (random(100) < Constants::HumanBehavior::DOUBLE_SPACE_CHANCE * 100) {
+                    Serial.println("Adding double space");
+                    keyboard.type(" ");
+                    updateTypingProgress(++typedCharCount, totalCharCount);
+                }
             }
-            
             keyboard.type(String(c));
+            updateTypingProgress(++typedCharCount, totalCharCount);
             simulateThinking();
         } else {
             currentWord += c;
@@ -44,7 +65,6 @@ void HumanSimulator::typeText(const String& text) {
 }
 
 void HumanSimulator::handleTypos(const String& word) {
-    // Check for pause before starting word
     if (hardware.isPaused()) return;
 
     if (random(100) < Constants::HumanBehavior::TYPO_CHANCE * 100) {
@@ -53,45 +73,43 @@ void HumanSimulator::handleTypos(const String& word) {
         
         Serial.printf("Making typo in word at position %d\n", typoPos);
         
-        // Type up to typo, checking for pause
+        // Type until the typo position
         for (int i = 0; i < typoPos; i++) {
             if (hardware.isPaused()) return;
             keyboard.type(String(word[i]));
+            updateTypingProgress(++typedCharCount, totalCharCount);
             simulateTypingDelay();
         }
         
         if (hardware.isPaused()) return;
         
-        // Make typo
+        // Type wrong character
         char wrongChar = 'a' + random(26);
         keyboard.type(String(wrongChar));
+        updateTypingProgress(++typedCharCount, totalCharCount);
         
-        // Maybe correct it
-        if (wordLen < Constants::HumanBehavior::UNCORRECTED_TYPO_THRESHOLD || 
-            random(100) >= Constants::HumanBehavior::UNCORRECTED_TYPO_CHANCE * 100) {
+        // Always correct the typo
+        Serial.println("Correcting typo");
+        delay(timingManager->calculateWordDelay());
+        keyboard.pressKey(KEY_BACKSPACE);
+        updateTypingProgress(--typedCharCount, totalCharCount);
+        delay(timingManager->calculateWordDelay());
+        keyboard.type(String(word[typoPos]));
+        updateTypingProgress(++typedCharCount, totalCharCount);
+        
+        // Continue with rest of word
+        for (int i = typoPos + 1; i < wordLen; i++) {
             if (hardware.isPaused()) return;
-            
-            Serial.println("Correcting typo");
-            delay(Constants::Typing::CORRECTION_DELAY);
-            keyboard.pressKey(KEY_BACKSPACE);
-            delay(Constants::Typing::CORRECTION_DELAY);
-            keyboard.type(String(word[typoPos]));
-            
-            // Type rest of word
-            for (int i = typoPos + 1; i < wordLen; i++) {
-                if (hardware.isPaused()) return;
-                keyboard.type(String(word[i]));
-                simulateTypingDelay();
-            }
-        } else {
-            Serial.println("Leaving typo uncorrected");
-            keyboard.type(word.substring(typoPos + 1));
+            keyboard.type(String(word[i]));
+            updateTypingProgress(++typedCharCount, totalCharCount);
+            simulateTypingDelay();
         }
     } else {
-        // Type word normally
+        // Type word normally without typo
         for (char c : word) {
             if (hardware.isPaused()) return;
             keyboard.type(String(c));
+            updateTypingProgress(++typedCharCount, totalCharCount);
             simulateTypingDelay();
         }
     }
@@ -101,9 +119,7 @@ void HumanSimulator::simulateTypingDelay() {
     if (hardware.isPaused()) return;
     
     applyFatigue();
-    int adjustedDelay = Constants::Typing::BASE_CHAR_DELAY * (1.0f + fatigueLevel);
-    adjustedDelay += random(-Constants::Typing::BASE_CHAR_DELAY/4, 
-                           Constants::Typing::BASE_CHAR_DELAY/4);
+    int adjustedDelay = timingManager->calculateCharacterDelay() * (1.0f + fatigueLevel);
     delay(max(adjustedDelay, Constants::Typing::BASE_CHAR_DELAY/2));
 }
 
@@ -120,9 +136,14 @@ void HumanSimulator::simulateThinking() {
     
     if (random(100) < Constants::HumanBehavior::THINKING_PAUSE_CHANCE) {
         Serial.println("Taking a thinking pause...");
-        delay(random(Constants::HumanBehavior::MIN_THINKING_PAUSE,
-                    Constants::HumanBehavior::MAX_THINKING_PAUSE));
+        delay(timingManager->calculateThinkingDelay());
     }
+}
+
+void HumanSimulator::updateTypingProgress(size_t charsTyped, size_t totalChars) {
+    typedCharCount = charsTyped;
+    totalCharCount = totalChars;
+    timingManager->updateProgress(typedCharCount, totalCharCount);
 }
 
 void HumanSimulator::processClip(int clipNumber) {
@@ -134,7 +155,6 @@ void HumanSimulator::processClip(int clipNumber) {
         return;
     }
     
-    Serial.println("Navigating to clip position...");
     keyboard.navigate(clipNumber == 1 ? 
                      Constants::Navigation::FIRST_CLIP_TAB_COUNT :
                      Constants::Navigation::NEXT_CLIP_TAB_COUNT);
@@ -148,13 +168,11 @@ void HumanSimulator::processClip(int clipNumber) {
     int clipCount = 0;
     bool isReadingClip = false;
     
-    Serial.println("Reading clip content...");
     while (file.available()) {
         String line = file.readStringUntil('\n');
         line.trim();
         
         if (line.indexOf("Clip #") != -1) {
-            Serial.printf("Found clip marker: %s\n", line.c_str());
             if (isReadingClip) break;
             clipCount++;
             if (clipCount == clipNumber) {
@@ -169,15 +187,20 @@ void HumanSimulator::processClip(int clipNumber) {
     file.close();
     
     if (clipText.length() > 0 && !hardware.isPaused()) {
-        Serial.printf("Found clip content (%d characters). Starting typing...\n", clipText.length());
+        timingManager->resetSection();
         typeText(clipText);
-        if (!hardware.isPaused()) {
-            Serial.println("Finished typing clip content");
-            Serial.printf("Completed processing clip %d\n", clipNumber);
-        }
     } else {
         Serial.println("WARNING: No content found for this clip");
     }
+}
+
+float HumanSimulator::getCurrentProgress() const {
+    return typedCharCount / (float)totalCharCount;
+}
+
+float HumanSimulator::getEstimatedTimeRemaining() const {
+    TimingManager::TypingMetrics metrics = timingManager->getCurrentMetrics();
+    return metrics.estimatedCompletion;
 }
 
 void HumanSimulator::countClips() {
@@ -192,7 +215,6 @@ void HumanSimulator::countClips() {
         String line = file.readStringUntil('\n');
         if (line.indexOf("Clip #") != -1) {
             totalClips++;
-            Serial.printf("Found clip: %s\n", line.c_str());
         }
     }
     

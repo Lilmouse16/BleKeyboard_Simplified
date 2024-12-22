@@ -158,6 +158,7 @@
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- include/hardware.h \
+ include/hardware.h include/aht_calculator.h \
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src/SPIFFS.h \
- C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h
+ C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
+ include/timing_manager.h include/time_utils.h

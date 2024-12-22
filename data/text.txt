@@ -1,6 +1,60 @@
-Clip #1 <00:00.000> - <00:00.685>
-Both men lean down slightly without touching the floor.
-Clip #2 <00:00.685> - <00:03.914>
-This scene shifts to a traditional Chinese wedding preparation captured in a wide shot at eye level, maintaining the same 16:9 aspect ratio as Clip 1. The focal point is a group of women gathered in a residential room decorated with traditional Chinese double happiness symbols on the walls.
-Clip #3 <00:03.914> - <00:07.513>
-While maintaining the same setting, positioning, and composition as in Clip 2, this scene features a medium close-up shot with a medium arms-up framing that focuses on an intimate interaction between the bride and an older woman. The camera maintains an eye-level angle, capturing their profiles as they share a warm moment.
+Video 7618fd1e
+Clip #1 <00:00.000> - <00:04.228>
+This scene is a live-action television commercial in Spanish displayed in a 16:9 widescreen format. The camera captures an eye-level medium shot of an insurance spokesperson in a professional office environment. The speaker maintains direct eye contact with the camera while presenting information about funeral coverage.
+In the foreground, a middle-aged man with fair skin tone, short dark graying hair, and defined facial features is positioned slightly left of center. He wears a professional dark business suit with a burgundy tie and light blue dress shirt. The background shows a modern office setting with glass partitions and decorative plants, creating depth in the scene. A branded information panel occupies the right side of the frame, displaying the blue lion head icon with the “Mutual of Omaha” in bold blue letters and on top of a Spanish text “LLAMA Y OBTÉN UNA COBERTURA DE HASTA $25.000 PARA:” in normal blue letters and with the “$25,000” number highlighted halfway in yellow, below the text "Gastos de funeral" and "Entierro" appear in normal black letters next to blue checkmarks.
+The overlay includes a blue lower third identifying the speaker as "Omar Germenos” in bold white letters and below the text “Portavoz pagado de United of Omaha" in normal white letters. A blue footer bar spans the bottom of the frame containing the “Mutual of Omaha logo” in white bold letters on the right, on the left a phone number "800-770-3708” is displayed in bold white, a blurry text in small white letters is center below both texts. The corporate branding maintains a consistent blue and white color scheme throughout the graphical elements.
+The scene features bright, even studio lighting typical of professional commercial productions, eliminating harsh shadows while maintaining clarity on the speaker's face and the information graphics. The professional yet approachable mood is established through the speaker's confident posture, direct gaze, and the clean, corporate setting, reinforcing the insurance company's message of reliability and trustworthiness.
+<00:00.000> - <00: 01.830>
+The man in the business suit leans forward slightly, nods, and opens and closes his mouth in a talking motion. He raises his hand slightly, moves it up and down, and then lowers it out of the frame as he straightens his posture.
+On the right side of the frame, the number “$25,000” highlight completely and the below the black text the words “Facturas médicas” appears in black letters with a blue checkmark in a zoom out motion.
+<00: 01.830> - <00:03.744>
+The man in the business suit continues speaking, leaning slightly to his right.
+<00: 03.744> - <00:04.228>
+The man in the suit his head slightly to the left, nods affirmatively, and looks directly at the camera.
+Clip #2 <00:04.228> - <00:12.393>
+While maintaining the same commercial format and 16:9 aspect ratio as in Clip 1, this scene transitions to a full-screen graphic display featuring the Mutual of Omaha branding and informational text.
+The center of the frame displays a white rectangular panel with the “Mutual of Omaha” logo and text at the top, featuring the company's distinctive blue lion head icon. Below it appears a prominent message in Spanish that reads "TU ACEPTACIÓN ESTÁ GARANTIZADA" in light gray text. The minimalist design emphasizes the message's importance through ample white space.
+The interface elements maintain the consistent corporate branding with a blue header and footer bars framing the white content area. The footer bar contains the same “Mutual of Omaha" logo on the left, the phone number "800-770-3708" on the right, and legal disclaimer text in a smaller font size in white centered below.
+The lighting is a flat, illumination typical of digital graphics, with the white background providing high contrast for the text elements. The professional, trustworthy mood is reinforced through the clean, corporate design and the reassuring message about guaranteed acceptance, utilizing the company's established blue and white color scheme to maintain brand consistency.
+<00:04.228> - <00:05.487>
+The text 'TU ACEPTACIÓN ESTÁ GARANTIZADA' zooms out until it becomes fully visible in dark gray letters.
+<00: 05.487> - <00:06.553>
+Below the gray text, a blue text box with torn-paper edges appears in the center and extends outward, displaying the text “Tus primas nunca subirán” in white letters, with “nunca” emphasized in bold.
+<00: 06.553> - <00:08.969>
+A new line of text, “Tu cobertura nunca disminuirá”, fades in below the white text, accompanied by a white checkmark and the word 'nunca' in bold.
+ <00: 08.969> - <00: 12.393>
+Below the previous white text, a new one with the words “Los beneficios se pueden pagar en tan solo 24 horas” next to a checkmark in white letters fades in, with the words “24 horas” in white bold.
+Clip #3 <00:12.393> - <00:24.281>
+While maintaining the same 16:9 aspect ratio and commercial format as in Clip 2, this scene presents the final call-to-action screen with prominent contact information.
+The frame is divided into three horizontal sections. The top and bottom portions feature white backgrounds, while the central section displays a rich blue background that dominates the frame. The “Mutual of Omaha” logo in white appears centered in the blue section, accompanied by corporate identification text reading "Underwritten by United of Omaha Life Insurance Company A Mutual of Omaha Company" to its right. Below this, a large white phone number "800-770-3708" in bold white is prominently displayed in the center of the blue field.
+The bottom white section contains legal disclaimer text in Spanish in a smaller font size, providing additional information about the insurance offer and company details. The composition maintains the clean, corporate aesthetic established in previous clips.
+The lighting remains consistent with the digital graphic style, featuring sharp contrast between the white text and blue background. The professional and authoritative mood is reinforced through the prominent display of contact information and the formal presentation of corporate credentials, encouraging viewer response while maintaining brand integrity through the consistent use of the company's blue and white color scheme.
+<00:12.393> - <00:13.587>
+A thin straight line extends outward from the center, separating the logo from the phone number. Below the phone number in smaller white letters the text “ Ayuda a derle a los tuyos la tranquilidad de saber que estás protegidos” and bellow the smaller text in bigger white bold tetters the text “LLAMA YA” starts to fades in.
+<00: 13.587> - <00:14.566>
+The texts bellow the phone number settle completely as a smaller text in white letters fades in with the text “Tu aceptación está garantizada” bellow the bigger text in bold white letters.
+<00: 14.566> - <00:20.749>
+The scene remains still whitout any movement
+<00:20.749> - <00:22.100>
+All text below the logo shifts to the right as the smaller text fades out. The phone number “800-770-3708” and the phrase “LLAMA YA” settle on the right side of the screen.
+A circle starts to appear on the left as the text moves to the right, widening to show a young woman with medium brown skin tone and long dark wavy hair, wearing a coral-colored top and a telephone headset. Her warm, welcoming smile and direct gaze angle at the right of the camera convey approachability and professionalism.
+<00:22.100> - <00:24.281>
+The young woman smiles warmly and moves her mouth speaking cheerfully.
+<00: 24.188> - <00: 24.342>
+A dark screen appears covering the whole frame.
+ 
+Clip #4 <00:24.342> - <00:25.025>
+This scene is a live-action television commercial displayed in a 16:9 aspect ratio. The camera captures a medium shot of a senior individual seated on a couch in a residential setting, presenting a hearing aid advertisement.
+In the foreground, a man in his 60s with fair skin tone, white hair, and a well-groomed white beard sits on a gray modern couch. He wears a bright green sweater over a white collar, creating contrast against the neutral-toned furniture. And holds a small black remote I his right hand. His expression appears contemplative as he gazes slightly off-camera to the right. The residential setting features soft beige walls, decorative curtains, and table lamps creating depth in the background.
+The commercial interface includes a lower third graphic overlay with the “MDHearing” logo and company name in teal and white, alongside the phone number "800-854-1674". The website "MDHearing.com" appears in the top right corner of the frame against a semi-transparent white background.
+The scene features soft, diffused indoor lighting typical of residential settings, with natural light from windows off-screen, creating a comfortable, home-like atmosphere. The mood is intimate and relatable, established through the casual home setting and the subject's natural, contemplative pose.
+<00: 24.342> - <00:25.025>
+The man in the green sweater raises his right hand, aiming the remote control forward. A transparent rectangular box fades in, displaying the Spanish text '“Escuchas la television a un volume alto…” from left to right.
+ 
+Clip #5 <00:25.025> - <00:25.625>
+This scene transitions to a close-up shot in a 16:9 aspect ratio, focusing on a hand holding a TV remote control against a deliberately blurred domestic background. The camera angle shifts to emphasize the daily challenge of television volume control.
+In the foreground, a fair-skinned hand holds a black television remote control with visible colored buttons. The background is intentionally out of focus, showing muted beige walls and indistinct furniture shapes, creating depth while maintaining focus on the remote. Spanish text appears as an overlay in white font, reading "¿Escuchas la televisión a un volumen alto..." (Do you listen to television at a high volume...).
+The commercial's interface elements remain consistent, with the MDHearing logo, website "MDHearing.com" in the top right corner, and phone number "800-854-1674" displayed in the teal and white branded banner at the bottom of the frame.
+The lighting appears soft and natural, typical of home environments, with subtle shadows that add dimension to the hand and remote. The mood is relatable and problem-focused, using the familiar action of adjusting TV volume to connect with viewers who might be experiencing hearing difficulties, creating a sense of understanding and offering a solution through the advertised hearing aids.
+<00: 25.025> - <00:25.625>
+The hand holding the remote presses a button, and a TV screen lights up in the blurred background.

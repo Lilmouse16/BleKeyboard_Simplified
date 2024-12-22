@@ -1,142 +1,226 @@
-# Teclado BLE Simplificado con ESP32
+# ESP32 Human-Like Typing Automation with AHT Control
 
-Este proyecto utiliza un **microcontrolador ESP32** para emular un teclado Bluetooth, permitiendo enviar pulsaciones de teclas a dispositivos emparejados como PC, smartphones o tabletas.
+## Overview
+This project implements an advanced human-like typing automation system using an ESP32 microcontroller. It simulates natural typing patterns with dynamic speed control based on Average Handling Time (AHT) targets derived from video duration. The system includes features like natural pauses, typos, fatigue simulation, and real-time progress tracking.
 
----
+## Features
 
-## **Características**
-- Simula un teclado Bluetooth usando ESP32.
-- Envía pulsaciones de teclas personalizables a través de BLE (Bluetooth Low Energy).
-- Navega entre secciones de una página web utilizando la tecla **Tab**.
-- Escribe un número específico de textos dependiendo del número de apariciones de **clip X** en un archivo de texto.
-- Simula características humanas en la navegación y escritura.
-- Ligero y fácil de modificar para combinaciones de teclas específicas.
-- Funciona sin problemas con dispositivos que admiten entrada Bluetooth.
+### Core Functionality
+- Bluetooth keyboard emulation
+- Natural typing patterns simulation
+- Dynamic speed adjustment based on AHT targets
+- Real-time progress tracking
+- Configurable difficulty levels
 
----
+### Human-Like Behaviors
+- Random typos with corrections
+- Natural typing speed variations
+- Fatigue simulation
+- Thinking pauses
+- Double space variations
 
-## **Resumen del Proyecto**
+### Hardware Feedback
+- LED status indicators
+- Button control interface
+- Buzzer notifications
+- Visual progress indication
 
-### **Configuración Inicial:**
-- Se conecta a un dispositivo (computadora/teléfono) vía Bluetooth como un teclado.
-- Carga un archivo de texto (`text.txt`) desde el almacenamiento interno (SPIFFS).
-- Calcula el tiempo estimado de finalización en función del contenido del texto.
-- Muestra progreso en los LEDs integrados:
-  - **Azul**: Conexión Bluetooth establecida.
-  - **Rojo**: Escritura activa.
+## Project Structure
 
-### **Proceso de Navegación:**
-- Utiliza la tecla **TAB** para navegar entre secciones (clips) de una página web:
-  - El primer clip requiere **16 pulsaciones de Tab**.
-  - Los clips siguientes requieren **5 pulsaciones de Tab** cada uno.
-- La navegación incluye características humanas como:
-  - Velocidades variables de pulsación.
-  - Errores ocasionales con correcciones simuladas.
-  - Pausas naturales entre grupos de pulsaciones.
-
-### **Proceso de Escritura:**
-- Escribe texto de manera similar a como lo haría un humano:
-  - Velocidad variable de escritura (base de **56 palabras por minuto**).
-  - Simulación de errores tipográficos con correcciones.
-  - Pausas naturales entre palabras y oraciones.
-  - Simulación de fatiga a lo largo del tiempo.
-  - Pausas aleatorias simulando "pensamiento".
-  - Agrupación de palabras en ráfagas con descansos entre ellas.
-
-### **Controles y Seguimiento:**
-- **Botón BOOT**:
-  - Inicia el proceso de escritura.
-  - Pausa y reanuda la escritura.
-- **Botón RST**:
-  - Reinicia el proceso completamente.
-- **Monitor Serial**:
-  - Muestra el estado de la conexión.
-  - Indica porcentaje de progreso.
-  - Tiempo transcurrido.
-  - Mensajes de estado generales.
-
-### **Manejo de Errores:**
-- Gestiona desconexiones Bluetooth.
-- Mantiene el estado del progreso durante pausas.
-- Se recupera de interrupciones sin perder el progreso.
-- Muestra un mensaje de finalización al terminar el proceso.
-
-Este proyecto esencialmente **simula a un humano escribiendo texto de forma natural**, haciendo que parezca que alguien realmente está tecleando en lugar de simplemente pegar texto en el dispositivo.
-
----
-
-## **Requisitos**
-
-### **Hardware**
-- Placa de desarrollo ESP32
-- Cable USB (para programar el ESP32)
-
-### **Software**
-- Plataforma de desarrollo **PlatformIO** en **Visual Studio Code**
-- Librerías necesarias:
-    - [ESP32 BLE Keyboard Library](https://github.com/T-vK/ESP32-BLE-Keyboard)
-
-Para instalar las librerías:
-1. Abre Visual Studio Code con PlatformIO instalado.
-2. Accede al archivo `platformio.ini` y agrega las librerías necesarias usando la configuración adecuada.
-
----
-
-## **Estructura de Carpetas**
-```
-BleKeyboard_Simplified/
-│
-├── README.md           # Documentación del proyecto (este archivo)
-├── src/                # Carpeta principal del código fuente
-│   └── main.cpp        # Archivo principal del código
-├── text.txt            # Archivo de texto usado como entrada (clips)
-├── platformio.ini      # Configuración del entorno PlatformIO
-└── libraries/          # Librerías externas requeridas (opcional)
+```plaintext
+esp32-typing-automation/
+├── include/
+│   ├── aht_calculator.h     # AHT calculation system
+│   ├── constants.h          # Project configuration constants
+│   ├── hardware.h          # Hardware interface management
+│   ├── human_simulator.h   # Human behavior simulation
+│   ├── keyboard.h         # Bluetooth keyboard interface
+│   ├── time_utils.h       # Time handling utilities
+│   └── timing_manager.h   # Timing control system
+├── src/
+│   ├── aht_calculator.cpp  # AHT implementation
+│   ├── hardware.cpp        # Hardware control implementation
+│   ├── human_simulator.cpp # Behavior simulation implementation
+│   ├── keyboard.cpp        # Keyboard interface implementation
+│   ├── main.cpp           # Main program flow
+│   ├── time_utils.cpp     # Time utilities implementation
+│   └── timing_manager.cpp # Timing management implementation
+├── data/
+│   ├── text.txt           # Task descriptions
+│   └── task_format.txt    # Task formatting guide
+└── platformio.ini         # Project configuration
 ```
 
----
+## Component Details
 
-## **Configuración y Uso**
-1. **Instala las Dependencias**: Asegúrate de tener instalada la extensión PlatformIO en Visual Studio Code.
-2. **Configura el Proyecto**:
-    - Clona este repositorio.
-    - Abre el proyecto en VSCode.
-    - Configura tu archivo `platformio.ini` con la placa ESP32 y las librerías necesarias.
-3. **Conecta el ESP32 a tu Computadora**: Utiliza un cable USB para conectar tu ESP32.
-4. **Carga el Código**:
-    - Compila y carga el código usando PlatformIO.
-5. **Empareja el ESP32 con un Dispositivo**:
-    - El ESP32 transmitirá como un teclado Bluetooth.
-    - Empareja el ESP32 con una computadora, teléfono o tableta.
-6. **Inicia el Proceso**:
-    - Utiliza el botón **BOOT** para comenzar la navegación y escritura.
-    - Observa el progreso en el monitor serial.
+### AHT Calculator System
+The AHT (Average Handling Time) calculator determines target typing speeds based on video duration and difficulty settings.
 
----
-
-## **Personalización**
-Para enviar pulsaciones de teclas personalizadas, edita el archivo `main.cpp`:
 ```cpp
-bleKeyboard.print("Hello, world!"); // Envía 'Hello, world!' al dispositivo emparejado
-bleKeyboard.write(KEY_TAB);         // Envía la tecla 'Tab' para navegar entre secciones
+class AHTCalculator {
+    // Calculates required typing speed based on:
+    // - Video duration
+    // - Difficulty multiplier
+    // - AHT graph data points
+}
 ```
 
-Consulta la documentación de la librería para obtener una lista completa de las teclas compatibles.
+### Timing Manager
+Manages typing speed and delays to meet AHT targets while maintaining natural variations.
 
----
+```cpp
+class TimingManager {
+    // Controls:
+    // - Character delays
+    // - Word pauses
+    // - Thinking delays
+    // - Progress tracking
+}
+```
 
-## **Contribuciones**
-Siéntete libre de enviar solicitudes de extracción (pull requests) para mejoras o características adicionales.
+### Human Simulator
+Implements human-like typing behaviors and manages the overall typing process.
 
----
+```cpp
+class HumanSimulator {
+    // Handles:
+    // - Typing simulation
+    // - Error generation
+    // - Fatigue effects
+    // - Natural variations
+}
+```
 
-## **Licencia**
-Este proyecto es de código abierto y está licenciado bajo la licencia MIT.
+## Task Format
+Tasks are defined in text.txt following this format:
 
----
+```plaintext
+Video [video_id]
 
-## **Créditos**
-- Construido utilizando la [ESP32 BLE Keyboard Library](https://github.com/T-vK/ESP32-BLE-Keyboard).
-- Soporte de ESP32 proporcionado por Espressif.
+Clip #[number] <start_time> - <end_time>
+[Main description of the scene]
 
----
+<start_time> - <end_time>
+[Action description]
+```
+
+Time Format: `<MM:SS.mmm>`
+- MM: minutes (00-99)
+- SS: seconds (00-59)
+- mmm: milliseconds (000-999)
+
+## AHT Calculation System
+
+The system uses an AHT graph to determine target typing speeds:
+
+### AHT Graph Data Points
+```plaintext
+Video Duration (sec) | Lower Bound | Target | Upper Bound
+     5               |    30       |  47.5  |    65
+    10               |    60       |   95   |   130
+    15               |    90       |  142.5 |   195
+    20               |   120       |  190   |   260
+    25               |   150       |  237.5 |   325
+    30               |   180       |  285   |   390
+    35               |   210       |  332.5 |   455
+    40               |   240       |  380   |   520
+    45               |   270       |  427.5 |   585
+```
+
+## Hardware Setup
+
+### Required Components
+- ESP32-S3 DevKit (or ESP32-WROOM)
+- LED indicators (Blue and Red)
+- Buzzer (passive)
+- USB Cable (data capable)
+- Breadboard and jumper wires
+
+### Pin Connections
+```plaintext
+Button: GPIO0 (Built-in BOOT button)
+Buzzer: GPIO19
+Blue LED: GPIO2 (External)
+Red LED: GPIO13 (External)
+```
+
+## Configuration
+
+### Constants (`constants.h`)
+```cpp
+namespace Constants {
+    namespace Typing {
+        const int BASE_WPM = 65;        // Base typing speed
+        const float MIN_SPEED_MULTIPLIER = 0.5f;
+        const float MAX_SPEED_MULTIPLIER = 2.0f;
+    }
+
+    namespace HumanBehavior {
+        const float TYPO_CHANCE = 0.15f;
+        const float FATIGUE_FACTOR = 0.05f;
+        // ... other behavior settings
+    }
+}
+```
+
+## Usage
+
+### Initial Setup
+1. Clone repository
+2. Install PlatformIO in VS Code
+3. Configure `platformio.ini`
+4. Connect hardware components
+5. Upload `text.txt` to SPIFFS
+
+### Serial Commands
+- `d X.XX` - Set difficulty multiplier (0.50 to 2.00)
+- `s` - Show current status
+- `r` - Reset current clip
+
+### LED Patterns
+- Both OFF: Standby
+- Alternating: Active typing
+- Both ON: Connected, ready
+- Red ON: Paused
+- Blue ON: Waiting for connection
+
+### Button Controls
+- Single press: Start/Pause
+- Long press: Reset current section
+
+## Performance Monitoring
+
+### Status Information
+The system provides real-time status updates:
+- Current clip progress
+- Typing speed
+- AHT compliance
+- Estimated completion time
+
+### Debug Output
+Serial monitor provides detailed information:
+- Connection status
+- Typing events
+- Error corrections
+- Progress updates
+
+## Future Enhancements
+- Multiple typing personality profiles
+- Network configuration interface
+- Advanced progress analytics
+- Remote control capabilities
+- Extended status reporting
+
+## License
+MIT License - See LICENSE file for details
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Submit pull request
+
+## Troubleshooting
+- Check USB connection
+- Verify COM port settings
+- Confirm LED connections
+- Check SPIFFS file upload

@@ -157,6 +157,7 @@
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/HIDTypes.h \
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/BLECharacteristic.h \
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
- include/human_simulator.h \
+ include/human_simulator.h include/aht_calculator.h \
  C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src/SPIFFS.h \
- C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h
+ C:/Users/dario/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
+ include/timing_manager.h include/time_utils.h
