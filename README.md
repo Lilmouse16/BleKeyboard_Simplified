@@ -1,226 +1,234 @@
-# ESP32 Human-Like Typing Automation with AHT Control
+# Automatización de Escritura Tipo Humano con ESP32 y Control AHT
 
-## Overview
-This project implements an advanced human-like typing automation system using an ESP32 microcontroller. It simulates natural typing patterns with dynamic speed control based on Average Handling Time (AHT) targets derived from video duration. The system includes features like natural pauses, typos, fatigue simulation, and real-time progress tracking.
+## Descripción General
+Este proyecto implementa un sistema avanzado de automatización de escritura que simula patrones de escritura humana utilizando un microcontrolador ESP32. Simula patrones naturales de escritura con control dinámico de velocidad basado en objetivos de Tiempo Medio de Manejo (AHT) derivados de la duración del video. El sistema incluye características como pausas naturales, errores de escritura con correcciones, simulación de fatiga y seguimiento de progreso en tiempo real.
 
-## Features
+## Características
 
-### Core Functionality
-- Bluetooth keyboard emulation
-- Natural typing patterns simulation
-- Dynamic speed adjustment based on AHT targets
-- Real-time progress tracking
-- Configurable difficulty levels
+### Funcionalidad Principal
+- Emulación de teclado Bluetooth
+- Simulación de patrones naturales de escritura
+- Ajuste dinámico de velocidad basado en objetivos AHT
+- Seguimiento de progreso en tiempo real
+- Sistema de 7 niveles de dificultad
 
-### Human-Like Behaviors
-- Random typos with corrections
-- Natural typing speed variations
-- Fatigue simulation
-- Thinking pauses
-- Double space variations
+### Comportamientos Tipo Humano
+- Errores de escritura aleatorios con correcciones automáticas
+- Variaciones naturales de velocidad de escritura
+- Simulación de fatiga
+- Pausas para pensar
+- Variaciones de doble espacio
 
-### Hardware Feedback
-- LED status indicators
-- Button control interface
-- Buzzer notifications
-- Visual progress indication
+### Retroalimentación por Hardware
+- Indicadores LED de estado
+- Interfaz de control por botón
+- Notificaciones por buzzer
+- Indicación visual de progreso
 
-## Project Structure
+## Estructura del Proyecto
 
 ```plaintext
 esp32-typing-automation/
 ├── include/
-│   ├── aht_calculator.h     # AHT calculation system
-│   ├── constants.h          # Project configuration constants
-│   ├── hardware.h          # Hardware interface management
-│   ├── human_simulator.h   # Human behavior simulation
-│   ├── keyboard.h         # Bluetooth keyboard interface
-│   ├── time_utils.h       # Time handling utilities
-│   └── timing_manager.h   # Timing control system
+│   ├── aht_calculator.h     # Sistema de cálculo AHT
+│   ├── constants.h          # Constantes de configuración
+│   ├── hardware.h          # Gestión de interfaz hardware
+│   ├── human_simulator.h   # Simulación de comportamiento humano
+│   ├── keyboard.h         # Interfaz de teclado Bluetooth
+│   ├── time_utils.h       # Utilidades de tiempo
+│   └── timing_manager.h   # Sistema de control de tiempo
 ├── src/
-│   ├── aht_calculator.cpp  # AHT implementation
-│   ├── hardware.cpp        # Hardware control implementation
-│   ├── human_simulator.cpp # Behavior simulation implementation
-│   ├── keyboard.cpp        # Keyboard interface implementation
-│   ├── main.cpp           # Main program flow
-│   ├── time_utils.cpp     # Time utilities implementation
-│   └── timing_manager.cpp # Timing management implementation
+│   ├── aht_calculator.cpp  # Implementación AHT
+│   ├── hardware.cpp        # Implementación control hardware
+│   ├── human_simulator.cpp # Implementación simulador humano
+│   ├── keyboard.cpp        # Implementación teclado
+│   ├── main.cpp           # Flujo principal del programa
+│   ├── time_utils.cpp     # Implementación utilidades tiempo
+│   └── timing_manager.cpp # Implementación gestor de tiempo
 ├── data/
-│   ├── text.txt           # Task descriptions
-│   └── task_format.txt    # Task formatting guide
-└── platformio.ini         # Project configuration
+│   ├── text.txt           # Descripciones de tareas
+│   └── task_format.txt    # Guía de formato de tareas
+└── platformio.ini         # Configuración del proyecto
 ```
 
-## Component Details
+## Detalles de Componentes
 
-### AHT Calculator System
-The AHT (Average Handling Time) calculator determines target typing speeds based on video duration and difficulty settings.
+### Sistema Calculador AHT
+El calculador AHT (Average Handling Time - Tiempo Medio de Manejo) determina las velocidades objetivo de escritura basadas en la duración del video y configuraciones de dificultad.
 
 ```cpp
 class AHTCalculator {
-    // Calculates required typing speed based on:
-    // - Video duration
-    // - Difficulty multiplier
-    // - AHT graph data points
+    // Calcula la velocidad requerida basada en:
+    // - Duración del video
+    // - Multiplicador de dificultad
+    // - Puntos de datos del gráfico AHT
 }
 ```
 
-### Timing Manager
-Manages typing speed and delays to meet AHT targets while maintaining natural variations.
+### Gestor de Tiempo
+Gestiona la velocidad de escritura y los retrasos para cumplir con los objetivos AHT mientras mantiene variaciones naturales.
 
 ```cpp
 class TimingManager {
-    // Controls:
-    // - Character delays
-    // - Word pauses
-    // - Thinking delays
-    // - Progress tracking
+    // Controla:
+    // - Retrasos entre caracteres
+    // - Pausas entre palabras
+    // - Retrasos de pensamiento
+    // - Seguimiento de progreso
 }
 ```
 
-### Human Simulator
-Implements human-like typing behaviors and manages the overall typing process.
+### Simulador Humano
+Implementa comportamientos de escritura tipo humano y gestiona el proceso general de escritura.
 
 ```cpp
 class HumanSimulator {
-    // Handles:
-    // - Typing simulation
-    // - Error generation
-    // - Fatigue effects
-    // - Natural variations
+    // Maneja:
+    // - Simulación de escritura
+    // - Generación de errores
+    // - Efectos de fatiga
+    // - Variaciones naturales
 }
 ```
 
-## Task Format
-Tasks are defined in text.txt following this format:
+## Sistema de Dificultad
+El sistema cuenta con 7 niveles de dificultad que afectan la duración de la escritura:
+- 1.00x: Muy Fácil (Tiempo base)
+- 2.00x: Fácil (2x Tiempo base)
+- 3.00x: Medio (3x Tiempo base)
+- 4.00x: Difícil (4x Tiempo base)
+- 5.00x: Muy Difícil (5x Tiempo base)
+- 6.00x: Extremo (6x Tiempo base)
+- 7.00x: Imposible (7x Tiempo base)
 
-```plaintext
+## Especificación de Formato de Tarea
+
+### Estructura Básica
+```
 Video [video_id]
 
-Clip #[number] <start_time> - <end_time>
-[Main description of the scene]
+Clip #[número] <tiempo_inicio> - <tiempo_fin>
+[Descripción principal de la escena]
 
-<start_time> - <end_time>
-[Action description]
+<tiempo_inicio> - <tiempo_fin>
+[Descripción de la acción]
+
+<tiempo_inicio> - <tiempo_fin> [CM]
+[Descripción del movimiento de cámara]
+
+<tiempo_inicio> - <tiempo_fin> [CT]
+[Descripción de la transición]
 ```
 
-Time Format: `<MM:SS.mmm>`
-- MM: minutes (00-99)
-- SS: seconds (00-59)
-- mmm: milliseconds (000-999)
+### Formato de Tiempo
+- Formato: `<MM:SS.mmm>`
+  - MM: minutos (00-99)
+  - SS: segundos (00-59)
+  - mmm: milisegundos (000-999)
 
-## AHT Calculation System
+### Reglas Importantes
+1. Cada clip debe comenzar con "Clip #"
+2. Todos los tiempos deben incluir ceros iniciales
+3. La descripción principal sigue al encabezado del clip
+4. [CM] denota Movimiento de Cámara
+5. [CT] denota Transición de Cámara
+6. Duración total = Último tiempo final - Primer tiempo inicial
 
-The system uses an AHT graph to determine target typing speeds:
+### Requisitos de Validación
+1. El formato de tiempo debe ser exacto
+2. Los números de clip deben ser secuenciales
+3. No se permiten huecos ni superposiciones de tiempo
+4. Las únicas etiquetas válidas son [CM] y [CT]
+5. Todos los marcos de tiempo requieren descripciones
 
-### AHT Graph Data Points
+## Sistema de Cálculo AHT
+
+El sistema utiliza un gráfico AHT para determinar las velocidades objetivo de escritura:
+
+### Puntos de Datos del Gráfico AHT
 ```plaintext
-Video Duration (sec) | Lower Bound | Target | Upper Bound
-     5               |    30       |  47.5  |    65
-    10               |    60       |   95   |   130
-    15               |    90       |  142.5 |   195
-    20               |   120       |  190   |   260
-    25               |   150       |  237.5 |   325
-    30               |   180       |  285   |   390
-    35               |   210       |  332.5 |   455
-    40               |   240       |  380   |   520
-    45               |   270       |  427.5 |   585
+Duración Video (seg) | Límite Inferior | Objetivo | Límite Superior
+       5            |       30        |   47.5   |       65
+      10            |       60        |    95    |      130
+      15            |       90        |   142.5  |      195
+      20            |      120        |   190    |      260
+      25            |      150        |   237.5  |      325
+      30            |      180        |   285    |      390
+      35            |      210        |   332.5  |      455
+      40            |      240        |   380    |      520
+      45            |      270        |   427.5  |      585
 ```
 
-## Hardware Setup
+## Configuración de Hardware
 
-### Required Components
-- ESP32-S3 DevKit (or ESP32-WROOM)
-- LED indicators (Blue and Red)
-- Buzzer (passive)
-- USB Cable (data capable)
-- Breadboard and jumper wires
+### Componentes Necesarios
+- ESP32-S3 DevKit (o ESP32-WROOM)
+- Indicadores LED (Azul y Rojo)
+- Buzzer (pasivo)
+- Cable USB (capaz de transmitir datos)
+- Protoboard y cables puente
 
-### Pin Connections
+### Conexiones de Pines
 ```plaintext
-Button: GPIO0 (Built-in BOOT button)
+Botón: GPIO0 (Botón BOOT incorporado)
 Buzzer: GPIO19
-Blue LED: GPIO2 (External)
-Red LED: GPIO13 (External)
+LED Azul: GPIO2 (Externo)
+LED Rojo: GPIO13 (Externo)
 ```
 
-## Configuration
+## Uso
 
-### Constants (`constants.h`)
-```cpp
-namespace Constants {
-    namespace Typing {
-        const int BASE_WPM = 65;        // Base typing speed
-        const float MIN_SPEED_MULTIPLIER = 0.5f;
-        const float MAX_SPEED_MULTIPLIER = 2.0f;
-    }
+### Configuración Inicial
+1. Clonar repositorio
+2. Instalar PlatformIO en VS Code
+3. Configurar `platformio.ini`
+4. Conectar componentes de hardware
+5. Subir `text.txt` a SPIFFS
 
-    namespace HumanBehavior {
-        const float TYPO_CHANCE = 0.15f;
-        const float FATIGUE_FACTOR = 0.05f;
-        // ... other behavior settings
-    }
-}
-```
+### Comandos Serie
+- `d X.XX` - Establecer multiplicador de dificultad (1.00 a 7.00)
+- `s` - Mostrar estado actual
+- `r` - Reiniciar clip actual (cuando está pausado)
+- `h` - Mostrar guía de dificultad
 
-## Usage
+### Patrones LED
+- Ambos APAGADOS: En espera
+- Alternando: Escritura activa
+- Ambos ENCENDIDOS: Conectado, listo
+- Rojo ENCENDIDO: Pausado
+- Azul ENCENDIDO: Esperando conexión
 
-### Initial Setup
-1. Clone repository
-2. Install PlatformIO in VS Code
-3. Configure `platformio.ini`
-4. Connect hardware components
-5. Upload `text.txt` to SPIFFS
+### Controles por Botón
+- Una pulsación: Iniciar/Pausar/Reanudar
+- Pulsar cuando está pausado: Iniciar siguiente sección
 
-### Serial Commands
-- `d X.XX` - Set difficulty multiplier (0.50 to 2.00)
-- `s` - Show current status
-- `r` - Reset current clip
+## Monitoreo de Rendimiento
 
-### LED Patterns
-- Both OFF: Standby
-- Alternating: Active typing
-- Both ON: Connected, ready
-- Red ON: Paused
-- Blue ON: Waiting for connection
+### Información de Estado
+El sistema proporciona actualizaciones de estado en tiempo real:
+- Progreso del clip actual
+- Velocidad de escritura y nivel de dificultad
+- Cumplimiento de AHT
+- Tiempo estimado de finalización
 
-### Button Controls
-- Single press: Start/Pause
-- Long press: Reset current section
+### Salida de Depuración
+El monitor serie proporciona información detallada:
+- Estado de conexión
+- Eventos de escritura
+- Correcciones de errores
+- Actualizaciones de progreso
 
-## Performance Monitoring
+## Licencia
+Licencia MIT - Ver archivo LICENSE para detalles
 
-### Status Information
-The system provides real-time status updates:
-- Current clip progress
-- Typing speed
-- AHT compliance
-- Estimated completion time
+## Contribuir
+1. Hacer fork del repositorio
+2. Crear rama de características
+3. Enviar pull request
 
-### Debug Output
-Serial monitor provides detailed information:
-- Connection status
-- Typing events
-- Error corrections
-- Progress updates
-
-## Future Enhancements
-- Multiple typing personality profiles
-- Network configuration interface
-- Advanced progress analytics
-- Remote control capabilities
-- Extended status reporting
-
-## License
-MIT License - See LICENSE file for details
-
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Submit pull request
-
-## Troubleshooting
-- Check USB connection
-- Verify COM port settings
-- Confirm LED connections
-- Check SPIFFS file upload
+## Solución de Problemas
+- Verificar conexión USB
+- Verificar configuración del puerto COM
+- Confirmar conexiones LED
+- Verificar carga de archivo SPIFFS
+- Asegurar que el monitor serie esté en el modo correcto para entrada de comandos

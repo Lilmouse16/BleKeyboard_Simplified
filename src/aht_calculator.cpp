@@ -4,7 +4,7 @@
 constexpr AHTCalculator::AHTPoint AHTCalculator::AHT_POINTS[];
 
 AHTCalculator::AHTCalculator() : 
-    difficultyMultiplier(1.0f),
+    difficultyMultiplier(1.0f),  // Start with easiest difficulty
     totalDuration(0.0f),
     targetAHT(0.0f),
     lowerBoundAHT(0.0f),
@@ -26,10 +26,15 @@ bool AHTCalculator::init() {
 }
 
 void AHTCalculator::setDifficultyMultiplier(float multiplier) {
-    // Clamp multiplier between 0.5 and 2.0
-    difficultyMultiplier = std::max(0.5f, std::min(2.0f, multiplier));
+    // Clamp multiplier between 1.0 and 7.0
+    difficultyMultiplier = std::max(1.0f, std::min(7.0f, multiplier));
     calculateAHTBounds();
     Serial.printf("Difficulty multiplier set to: %.2f\n", difficultyMultiplier);
+    
+    // Print expected completion times for feedback
+    float hours = (targetAHT * difficultyMultiplier) / 60.0f;
+    Serial.printf("Expected completion time at difficulty %.2f: %.1f hours\n", 
+                 difficultyMultiplier, hours);
 }
 
 float AHTCalculator::calculateTotalDuration() {
@@ -37,8 +42,7 @@ float AHTCalculator::calculateTotalDuration() {
         return 0.0f;
     }
     
-    // Instead of summing all ranges, just take the difference between
-    // the start of first clip and end of last clip
+    // Calculate total duration from first start to last end
     float firstStart = clipTimeRanges.front().startTime;
     float lastEnd = clipTimeRanges.back().endTime;
     

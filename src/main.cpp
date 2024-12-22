@@ -16,6 +16,7 @@ float taskDifficulty = Constants::HumanBehavior::DEFAULT_DIFFICULTY;
 void handleSerialCommands();
 void displayStatus();
 void setDifficulty(float difficulty);
+void displayDifficultyGuide();
 
 void setup() {
     Serial.begin(115200);
@@ -35,10 +36,13 @@ void setup() {
     }
     
     Serial.println("\nAvailable commands:");
-    Serial.println("d X.XX - Set difficulty multiplier (0.50 to 2.00)");
+    Serial.println("d X.XX - Set difficulty multiplier (1.00 to 7.00)");
     Serial.println("s - Show status");
     Serial.println("r - Reset current clip");
+    Serial.println("h - Show difficulty guide");
     Serial.println("\nReady! Press button to start/pause/resume");
+    
+    displayDifficultyGuide();
 }
 
 void loop() {
@@ -122,11 +126,16 @@ void handleSerialCommands() {
                 Serial.println("Pause typing first to reset");
             }
         }
+        else if (command == "h") {
+            // Display difficulty guide
+            displayDifficultyGuide();
+        }
         else {
             Serial.println("Unknown command. Available commands:");
-            Serial.println("d X.XX - Set difficulty (0.50 to 2.00)");
+            Serial.println("d X.XX - Set difficulty (1.00 to 7.00)");
             Serial.println("s - Show status");
             Serial.println("r - Reset current clip");
+            Serial.println("h - Show difficulty guide");
         }
     }
 }
@@ -138,7 +147,16 @@ void displayStatus() {
     Serial.println("\n=== Status ===");
     Serial.printf("Current Clip: %d/%d\n", currentClip, simulator.getTotalClips());
     Serial.printf("Progress: %.1f%%\n", progress);
-    Serial.printf("Difficulty: %.2fx\n", taskDifficulty);
+    Serial.printf("Difficulty: %.2fx", taskDifficulty);
+    
+    // Add difficulty level description
+    if (taskDifficulty == 1.0f) Serial.println(" (Very Easy)");
+    else if (taskDifficulty <= 2.0f) Serial.println(" (Easy)");
+    else if (taskDifficulty <= 3.0f) Serial.println(" (Medium)");
+    else if (taskDifficulty <= 4.0f) Serial.println(" (Hard)");
+    else if (taskDifficulty <= 5.0f) Serial.println(" (Very Hard)");
+    else if (taskDifficulty <= 6.0f) Serial.println(" (Extreme)");
+    else Serial.println(" (Impossible)");
     
     // Convert and display time in hours and minutes
     int hours = (int)(timeRemaining / 60.0f);
@@ -166,6 +184,27 @@ void setDifficulty(float difficulty) {
                              Constants::HumanBehavior::MAX_DIFFICULTY_MULTIPLIER);
     
     simulator.setDifficulty(taskDifficulty);
-    Serial.printf("Difficulty set to: %.2fx\n", taskDifficulty);
+    Serial.printf("\nDifficulty set to: %.2fx - ", taskDifficulty);
+    
+    // Print difficulty description
+    if (taskDifficulty == 1.0f) Serial.println("Very Easy");
+    else if (taskDifficulty <= 2.0f) Serial.println("Easy");
+    else if (taskDifficulty <= 3.0f) Serial.println("Medium");
+    else if (taskDifficulty <= 4.0f) Serial.println("Hard");
+    else if (taskDifficulty <= 5.0f) Serial.println("Very Hard");
+    else if (taskDifficulty <= 6.0f) Serial.println("Extreme");
+    else Serial.println("Impossible");
+    
     displayStatus();
+}
+
+void displayDifficultyGuide() {
+    Serial.println("\n=== Difficulty Guide ===");
+    Serial.println("1.00x - Very Easy  (Base time)");
+    Serial.println("2.00x - Easy       (2x Base time)");
+    Serial.println("3.00x - Medium     (3x Base time)");
+    Serial.println("4.00x - Hard       (4x Base time)");
+    Serial.println("5.00x - Very Hard  (5x Base time)");
+    Serial.println("6.00x - Extreme    (6x Base time)");
+    Serial.println("7.00x - Impossible (7x Base time)");
 }
